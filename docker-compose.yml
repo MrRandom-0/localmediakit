@@ -1,0 +1,10 @@
+# One command:  docker compose up -d
+# Then open:    http://localhost:8080
+services:
+  localmediakit:
+    build: .
+    image: localmediakit
+    container_name: localmediakit
+    ports:
+      - "8080:80"
+    restart: unless-stopped
