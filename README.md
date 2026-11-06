@@ -11,17 +11,25 @@ sites, with no uploads, no accounts, and no file-size upsells. Your files never 
 > in a queue. LocalMediaKit works like this: the processing happens in this browser tab, on
 > your machine. Close the tab and everything is gone.
 
+![LocalMediaKit home — five local media tools](docs/screenshots/home.png)
+
 ## Screenshots
 
 <!-- Capture guide: docs/screenshots/README.md — real captures only, please. -->
+<!-- Screenshots are standalone full-width images on purpose: images inside
+     markdown tables do not render in the GitHub mobile app. -->
 
-| Home | Image Studio |
-| --- | --- |
-| ![Home](docs/screenshots/home.png) | ![Image Studio](docs/screenshots/image-studio.png) |
+**Image Studio** — three photos converted to WebP, 72% saved in total, with a preview of every file:
 
-| Metadata Stripper | Video & Audio Studio |
-| --- | --- |
-| ![Metadata](docs/screenshots/metadata.png) | ![Video Studio](docs/screenshots/video-studio.png) |
+![Image Studio — batch image compression with previews and savings](docs/screenshots/image-studio.png)
+
+**Metadata Stripper** — a photo's hidden GPS location, exposed before stripping:
+
+![Metadata Stripper — GPS location warning on a photo](docs/screenshots/metadata.png)
+
+**Video & Audio Studio** — ffmpeg running in the browser, audio extracted from a clip:
+
+![Video and Audio Studio — extracting audio from a video, in the browser](docs/screenshots/video-studio.png)
 
 ## The tools
 

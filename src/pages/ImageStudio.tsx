@@ -22,10 +22,12 @@ import {
 interface ImageJob {
   id: number;
   file: File;
+  /** Object URL of the original file, so the person can see their photo. */
+  previewUrl: string;
   originalWidth?: number;
   originalHeight?: number;
   status: "waiting" | "working" | "done" | "error";
-  result?: { blob: Blob; name: string; width: number; height: number };
+  result?: { blob: Blob; name: string; width: number; height: number; previewUrl: string };
   error?: string;
 }
 
@@ -50,7 +52,12 @@ export default function ImageStudio() {
   async function addFiles(files: File[]) {
     const newJobs: ImageJob[] = files
       .filter((file) => file.type.startsWith("image/"))
-      .map((file) => ({ id: nextId++, file, status: "waiting" as const }));
+      .map((file) => ({
+        id: nextId++,
+        file,
+        previewUrl: URL.createObjectURL(file),
+        status: "waiting" as const,
+      }));
     if (newJobs.length === 0) return;
     setJobs((prev) => [...prev, ...newJobs]);
     // Read dimensions up-front so people can see what they dropped in.
@@ -97,6 +104,7 @@ export default function ImageStudio() {
                     name,
                     width: processed.width,
                     height: processed.height,
+                    previewUrl: URL.createObjectURL(processed.blob),
                   },
                 }
               : item,
@@ -239,7 +247,14 @@ export default function ImageStudio() {
             <button
               type="button"
               className={secondaryButtonClass}
-              onClick={() => setJobs([])}
+              onClick={() => {
+                // Object URLs pin the file data in memory until revoked.
+                for (const job of jobs) {
+                  URL.revokeObjectURL(job.previewUrl);
+                  if (job.result) URL.revokeObjectURL(job.result.previewUrl);
+                }
+                setJobs([]);
+              }}
               disabled={busy}
             >
               <Trash2 className="h-4 w-4" aria-hidden /> Clear
@@ -258,6 +273,12 @@ export default function ImageStudio() {
                 key={job.id}
                 className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-sm"
               >
+                <img
+                  src={job.previewUrl}
+                  alt={`Preview of ${job.file.name}`}
+                  className="h-12 w-12 shrink-0 rounded-md border border-zinc-200 object-cover dark:border-zinc-700"
+                  loading="lazy"
+                />
                 <span className="min-w-0 flex-1 truncate font-medium">{job.file.name}</span>
                 <span className="text-zinc-500">
                   {job.originalWidth && job.originalHeight
@@ -267,8 +288,15 @@ export default function ImageStudio() {
                 </span>
                 {job.status === "done" && job.result && (
                   <>
+                    <img
+                      src={job.result.previewUrl}
+                      alt={`Processed result for ${job.file.name}`}
+                      className="h-12 w-12 shrink-0 rounded-md border border-teal-200 object-cover dark:border-teal-800"
+                      loading="lazy"
+                    />
                     <span>
-                      → {formatBytes(job.result.blob.size)} (
+                      → {job.result.width} × {job.result.height} ·{" "}
+                      {formatBytes(job.result.blob.size)} (
                       {savingsPercent(job.file.size, job.result.blob.size)}% saved)
                     </span>
                     <button

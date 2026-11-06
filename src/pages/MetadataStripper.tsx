@@ -19,6 +19,7 @@ interface Inspected {
 
 export default function MetadataStripper() {
   const [item, setItem] = useState<Inspected | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function inspect(files: File[]) {
@@ -26,6 +27,12 @@ export default function MetadataStripper() {
     if (!file) return;
     setBusy(true);
     setItem(null);
+    // Show the photo itself, not just its filename — people should see
+    // exactly which picture they are about to clean and share.
+    setPreviewUrl((previous) => {
+      if (previous) URL.revokeObjectURL(previous);
+      return URL.createObjectURL(file);
+    });
     try {
       // Dynamic import: exifr is only needed on this page.
       const { default: exifr } = await import("exifr");
@@ -112,6 +119,14 @@ export default function MetadataStripper() {
             {item.file.name}{" "}
             <span className="font-normal text-zinc-500">({formatBytes(item.file.size)})</span>
           </h2>
+
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt={`Preview of ${item.file.name}`}
+              className="mt-3 max-h-80 w-full rounded-lg border border-zinc-200 object-contain dark:border-zinc-700"
+            />
+          )}
 
           {item.error && (
             <p role="alert" className="mt-2 text-sm text-amber-700 dark:text-amber-300">
