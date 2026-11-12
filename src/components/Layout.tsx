@@ -53,7 +53,17 @@ export default function Layout() {
             <ShieldCheck className="h-4 w-4 text-teal-700 dark:text-teal-400" aria-hidden />
             Your files never leave this device — there is no server to send them to.
           </span>
-          <span className="ml-auto">MIT licensed · Built for the open web</span>
+          <span className="ml-auto">
+            MIT licensed · Built for the open web ·{" "}
+            <a
+              href="https://www.netlify.com"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-teal-700 hover:underline dark:text-teal-300"
+            >
+              Deployed on Netlify
+            </a>
+          </span>
         </div>
       </footer>
     </div>
