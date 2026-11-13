@@ -1,16 +1,18 @@
-import { Download } from "lucide-react";
+import { Download, FileArchive, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Dropzone from "../components/Dropzone";
 import {
   cardClass,
+  ghostButtonClass,
   inputClass,
   labelClass,
   PageHeader,
   secondaryButtonClass,
 } from "../components/ui";
-import { downloadText } from "../lib/download";
+import { downloadBlob, downloadText } from "../lib/download";
 import { replaceExtension } from "../lib/format";
 import {
+  convertSubtitles,
   detectFormat,
   parseSubtitles,
   shiftCues,
@@ -19,6 +21,17 @@ import {
   toVtt,
   type SubtitleFormat,
 } from "../lib/subtitles";
+import { buildZip } from "../lib/zip";
+
+interface BatchEntry {
+  id: number;
+  name: string;
+  /** File content; null when the file could not be read as subtitles. */
+  content: string | null;
+  cueCount: number;
+}
+
+let nextBatchId = 1;
 
 export default function SubtitleTools() {
   const [fileName, setFileName] = useState<string | null>(null);
@@ -27,6 +40,7 @@ export default function SubtitleTools() {
   const [shiftSeconds, setShiftSeconds] = useState(0);
   const [stripTags, setStripTags] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [batch, setBatch] = useState<BatchEntry[]>([]);
 
   const cues = useMemo(() => (source ? parseSubtitles(source) : []), [source]);
 
@@ -38,26 +52,41 @@ export default function SubtitleTools() {
     return outputFormat === "srt" ? toSrt(working) : toVtt(working);
   }, [cues, stripTags, shiftSeconds, outputFormat]);
 
-  async function loadFile(files: File[]) {
-    const file = files[0];
-    if (!file) return;
+  async function loadFiles(files: File[]) {
+    if (files.length === 0) return;
     setLoadError(null);
-    try {
-      const text = await file.text();
-      const parsed = parseSubtitles(text);
-      if (parsed.length === 0) {
-        setLoadError(
-          "No subtitle cues were found in that file. Check it is a real .srt or .vtt file.",
-        );
-        return;
+    // Every dropped file joins the batch list; the first readable one also
+    // loads into the editor below, as before.
+    const entries: BatchEntry[] = [];
+    let editorLoaded = false;
+    for (const file of files) {
+      try {
+        const text = await file.text();
+        const parsed = parseSubtitles(text);
+        entries.push({
+          id: nextBatchId++,
+          name: file.name,
+          content: parsed.length > 0 ? text : null,
+          cueCount: parsed.length,
+        });
+        if (parsed.length > 0 && !editorLoaded) {
+          editorLoaded = true;
+          setSource(text);
+          setFileName(file.name);
+          // The natural conversion is to the *other* format.
+          setOutputFormat(detectFormat(text, file.name) === "srt" ? "vtt" : "srt");
+        }
+      } catch {
+        entries.push({ id: nextBatchId++, name: file.name, content: null, cueCount: 0 });
       }
-      setSource(text);
-      setFileName(file.name);
-      // The natural conversion is to the *other* format.
-      setOutputFormat(detectFormat(text, file.name) === "srt" ? "vtt" : "srt");
-    } catch {
-      setLoadError("That file could not be read as text.");
     }
+    const readable = entries.filter((entry) => entry.content !== null);
+    if (readable.length === 0) {
+      setLoadError(
+        "No subtitle cues were found in those files. Check they are real .srt or .vtt files.",
+      );
+    }
+    setBatch((prev) => [...prev, ...entries]);
   }
 
   function download() {
@@ -65,19 +94,57 @@ export default function SubtitleTools() {
     downloadText(result, replaceExtension(fileName, outputFormat), "text/plain");
   }
 
+  // Batch results follow the same settings as the single-file editor —
+  // one pipeline (convertSubtitles), applied per file.
+  const batchResults = useMemo(
+    () =>
+      batch.map((entry) => ({
+        entry,
+        converted:
+          entry.content !== null
+            ? convertSubtitles(entry.content, {
+                outputFormat,
+                shiftMs: Math.round(shiftSeconds * 1000),
+                strip: stripTags,
+              })
+            : null,
+      })),
+    [batch, outputFormat, shiftSeconds, stripTags],
+  );
+
+  const downloadableBatch = batchResults.filter((item) => item.converted !== null);
+
+  async function downloadBatchZip() {
+    const entries = downloadableBatch.flatMap((item) =>
+      item.converted
+        ? [
+            {
+              name: replaceExtension(item.entry.name, outputFormat),
+              blob: new Blob([item.converted.output], { type: "text/plain;charset=utf-8" }),
+            },
+          ]
+        : [],
+    );
+    if (entries.length === 0) return;
+    const blob = await buildZip(entries);
+    downloadBlob(blob, "localmediakit-subtitles.zip");
+  }
+
   return (
     <div>
       <PageHeader title="Subtitle Tools">
         Convert between SRT (the format most players and editors use) and WebVTT (the format web
-        players need), fix captions that drift out of sync, and remove formatting tags — all by
-        editing the text locally, never uploading it.
+        players need), fix captions that drift out of sync, and remove formatting tags — one file
+        at a time or a whole season in a batch — all by editing the text locally, never uploading
+        it.
       </PageHeader>
 
       <Dropzone
         accept=".srt,.vtt,text/plain"
-        label="Drop a subtitle file here"
-        hint=".srt or .vtt"
-        onFiles={loadFile}
+        multiple
+        label="Drop subtitle files here"
+        hint=".srt or .vtt — drop several to convert them as a batch"
+        onFiles={loadFiles}
       />
       {loadError && (
         <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">
@@ -153,6 +220,75 @@ export default function SubtitleTools() {
           </label>
         </div>
       </div>
+
+      {batch.length > 0 && (
+        <div className="mt-6">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <h2 className="font-semibold">
+              Batch — {batch.length} file{batch.length === 1 ? "" : "s"}
+            </h2>
+            <div className="ml-auto flex flex-wrap gap-2">
+              <button
+                type="button"
+                className={secondaryButtonClass}
+                onClick={downloadBatchZip}
+                disabled={downloadableBatch.length === 0}
+              >
+                <FileArchive className="h-4 w-4" aria-hidden />
+                Download all as zip ({downloadableBatch.length})
+              </button>
+              <button
+                type="button"
+                className={secondaryButtonClass}
+                onClick={() => setBatch([])}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden /> Clear batch
+              </button>
+            </div>
+          </div>
+          <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
+            Every file below is converted with the settings above — change the format, shift or
+            tag stripping and the whole batch updates.
+          </p>
+          <ul
+            className={`${cardClass} divide-y divide-zinc-100 overflow-hidden dark:divide-zinc-800`}
+          >
+            {batchResults.map(({ entry, converted }) => (
+              <li
+                key={entry.id}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3.5 text-sm transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+              >
+                <span className="min-w-0 flex-1 truncate font-medium">{entry.name}</span>
+                {converted ? (
+                  <>
+                    <span className="text-zinc-500 tabular-nums">
+                      {converted.cueCount} cue{converted.cueCount === 1 ? "" : "s"} → .
+                      {outputFormat}
+                    </span>
+                    <button
+                      type="button"
+                      className={ghostButtonClass}
+                      onClick={() =>
+                        downloadText(
+                          converted.output,
+                          replaceExtension(entry.name, outputFormat),
+                          "text/plain",
+                        )
+                      }
+                    >
+                      <Download className="h-4 w-4" aria-hidden /> Download
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-red-700 dark:text-red-300">
+                    No subtitle cues found in this file
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {result && (
         <div className="mt-6">

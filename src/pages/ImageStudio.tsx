@@ -1,5 +1,5 @@
 import { Download, FileArchive, Play, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Dropzone from "../components/Dropzone";
 import {
   cardClass,
@@ -13,13 +13,17 @@ import {
 import { downloadBlob } from "../lib/download";
 import { formatBytes, replaceExtension, savingsPercent } from "../lib/format";
 import {
+  canEncodeFormat,
+  EXACT_SIZE_PRESETS,
   FORMAT_INFO,
   formatFromMime,
   processImage,
   readDimensions,
   RESIZE_PRESETS,
+  type Dimensions,
   type ImageFormat,
 } from "../lib/image";
+import { buildZip } from "../lib/zip";
 
 interface ImageJob {
   id: number;
@@ -40,7 +44,30 @@ export default function ImageStudio() {
   const [formatChoice, setFormatChoice] = useState<"keep" | ImageFormat>("keep");
   const [quality, setQuality] = useState(82);
   const [maxDimension, setMaxDimension] = useState(0);
+  const [resizeMode, setResizeMode] = useState<"fit" | "exact">("fit");
+  const [exactPreset, setExactPreset] = useState(0);
+  const [customSize, setCustomSize] = useState<Dimensions>({ width: 1200, height: 630 });
   const [busy, setBusy] = useState(false);
+  // AVIF encoding depends on the browser; probe once so the option can be
+  // labelled honestly instead of failing after someone has queued a batch.
+  const [avifSupported, setAvifSupported] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void canEncodeFormat("avif").then((supported) => {
+      if (!cancelled) setAvifSupported(supported);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const exactSize: Dimensions | undefined =
+    resizeMode === "exact"
+      ? exactPreset < EXACT_SIZE_PRESETS.length
+        ? EXACT_SIZE_PRESETS[exactPreset].size
+        : customSize
+      : undefined;
 
   const totals = useMemo(() => {
     const done = jobs.filter((job) => job.status === "done" && job.result);
@@ -87,12 +114,18 @@ export default function ImageStudio() {
         prev.map((item) => (item.id === job.id ? { ...item, status: "working" } : item)),
       );
       try {
+        // "Keep" preserves AVIF inputs as AVIF too; formatFromMime covers
+        // the canvas-native formats, everything else falls back to JPEG.
         const format =
-          formatChoice === "keep" ? (formatFromMime(job.file.type) ?? "jpeg") : formatChoice;
+          formatChoice === "keep"
+            ? (formatFromMime(job.file.type) ??
+              (job.file.type === "image/avif" ? "avif" : "jpeg"))
+            : formatChoice;
         const processed = await processImage(job.file, {
           format,
           quality: quality / 100,
           maxDimension,
+          exactSize,
         });
         const name = replaceExtension(job.file.name, FORMAT_INFO[format].extension);
         setJobs((prev) =>
@@ -137,25 +170,12 @@ export default function ImageStudio() {
       return;
     }
     // Several files: bundle them into one zip instead of firing off a pile
-    // of separate downloads (which browsers tend to block anyway).
-    const { default: JSZip } = await import("jszip");
-    const zip = new JSZip();
-    const usedNames = new Set<string>();
-    for (const job of done) {
-      if (!job.result) continue;
-      // Two inputs can share a name (a.jpg from two folders); suffix the
-      // duplicates so nothing overwrites anything else inside the zip.
-      let name = job.result.name;
-      const dot = name.lastIndexOf(".");
-      let counter = 2;
-      while (usedNames.has(name)) {
-        name = `${name.slice(0, dot)}-${counter}.${name.slice(dot + 1)}`;
-        counter++;
-      }
-      usedNames.add(name);
-      zip.file(name, job.result.blob);
-    }
-    const blob = await zip.generateAsync({ type: "blob" });
+    // of separate downloads (which browsers tend to block anyway). The zip
+    // helper de-duplicates names so same-named inputs can't overwrite.
+    const entries = done.flatMap((job) =>
+      job.result ? [{ name: job.result.name, blob: job.result.blob }] : [],
+    );
+    const blob = await buildZip(entries);
     downloadBlob(blob, "localmediakit-images.zip");
   }
 
@@ -163,8 +183,9 @@ export default function ImageStudio() {
     <div>
       <PageHeader title="Image Studio">
         Compress, convert and resize images in batches. WebP at a sensible quality setting usually
-        cuts photo sizes by half or more; PNG stays lossless. Processed images also come out with
-        their metadata removed, as a side effect of how browsers encode them.
+        cuts photo sizes by half or more, AVIF goes further still, and PNG stays lossless. Resize
+        by longest side, or crop to an exact size for social and link previews. Processed images
+        also come out with their metadata removed, as a side effect of how browsers encode them.
       </PageHeader>
 
       <Dropzone
@@ -175,7 +196,7 @@ export default function ImageStudio() {
         onFiles={addFiles}
       />
 
-      <div className={`${cardClass} mt-6 grid gap-4 p-6 sm:grid-cols-3`}>
+      <div className={`${cardClass} mt-6 grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4`}>
         <div>
           <label htmlFor="format" className={labelClass}>
             Output format
@@ -189,29 +210,107 @@ export default function ImageStudio() {
             <option value="keep">Keep original format</option>
             <option value="jpeg">JPEG — photos, everywhere-compatible</option>
             <option value="webp">WebP — smallest for the web</option>
+            <option value="avif" disabled={avifSupported === false}>
+              AVIF — smallest of all
+              {avifSupported === false ? " (not supported by this browser)" : ""}
+            </option>
             <option value="png">PNG — lossless, supports transparency</option>
           </select>
         </div>
         <div>
-          <label htmlFor="max-dimension" className={labelClass}>
+          <label htmlFor="resize-mode" className={labelClass}>
             Resize
           </label>
           <select
-            id="max-dimension"
+            id="resize-mode"
             className={inputClass}
-            value={maxDimension}
-            onChange={(event) => setMaxDimension(Number(event.target.value))}
+            value={resizeMode}
+            onChange={(event) => setResizeMode(event.target.value as typeof resizeMode)}
           >
-            {RESIZE_PRESETS.map((preset) => (
-              <option key={preset.value} value={preset.value}>
-                {preset.label}
-              </option>
-            ))}
+            <option value="fit">Fit within a longest side</option>
+            <option value="exact">Exact size — crop to fill</option>
           </select>
         </div>
+        {resizeMode === "fit" ? (
+          <div>
+            <label htmlFor="max-dimension" className={labelClass}>
+              Longest side
+            </label>
+            <select
+              id="max-dimension"
+              className={inputClass}
+              value={maxDimension}
+              onChange={(event) => setMaxDimension(Number(event.target.value))}
+            >
+              {RESIZE_PRESETS.map((preset) => (
+                <option key={preset.value} value={preset.value}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="exact-preset" className={labelClass}>
+              Exact size
+            </label>
+            <select
+              id="exact-preset"
+              className={inputClass}
+              value={exactPreset}
+              onChange={(event) => setExactPreset(Number(event.target.value))}
+            >
+              {EXACT_SIZE_PRESETS.map((preset, index) => (
+                <option key={preset.label} value={index}>
+                  {preset.label}
+                </option>
+              ))}
+              <option value={EXACT_SIZE_PRESETS.length}>Custom size…</option>
+            </select>
+            {exactPreset >= EXACT_SIZE_PRESETS.length && (
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={20000}
+                  aria-label="Custom width in pixels"
+                  className={inputClass}
+                  value={customSize.width}
+                  onChange={(event) =>
+                    setCustomSize((size) => ({
+                      ...size,
+                      width: Math.max(1, Number(event.target.value) || 1),
+                    }))
+                  }
+                />
+                <span className="text-zinc-500" aria-hidden>
+                  ×
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={20000}
+                  aria-label="Custom height in pixels"
+                  className={inputClass}
+                  value={customSize.height}
+                  onChange={(event) =>
+                    setCustomSize((size) => ({
+                      ...size,
+                      height: Math.max(1, Number(event.target.value) || 1),
+                    }))
+                  }
+                />
+              </div>
+            )}
+            <p className="mt-1 text-xs text-zinc-500">
+              The photo is centre-cropped to the chosen shape — nothing is stretched.
+            </p>
+          </div>
+        )}
         <div>
           <label htmlFor="quality" className={labelClass}>
-            Quality: {quality}% <span className="font-normal text-zinc-500">(JPEG / WebP)</span>
+            Quality: {quality}%{" "}
+            <span className="font-normal text-zinc-500">(JPEG / WebP / AVIF)</span>
           </label>
           <input
             id="quality"

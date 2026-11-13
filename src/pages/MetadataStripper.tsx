@@ -87,6 +87,16 @@ export default function MetadataStripper() {
         strippedBlob: processed.blob,
         strippedRows: summariseExif(after),
       });
+    } catch (error) {
+      // Re-encoding can fail honestly now (e.g. a format this browser cannot
+      // encode) — say so instead of leaving the button looking dead.
+      setItem({
+        ...item,
+        error:
+          error instanceof Error
+            ? error.message
+            : "The cleaned copy could not be created in this browser.",
+      });
     } finally {
       setBusy(false);
     }
