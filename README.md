@@ -21,7 +21,11 @@ sites, with no uploads, no accounts, and no file-size upsells. Your files never 
 <!-- Screenshots are standalone full-width images on purpose: images inside
      markdown tables do not render in the GitHub mobile app. -->
 
-**Image Studio** — three photos converted to WebP, 72% saved in total, with a preview of every file:
+**Home — dark mode** — the home page follows your system theme:
+
+![LocalMediaKit home in dark mode](docs/screenshots/home-dark.png)
+
+**Image Studio** — three photos converted to WebP, 89% saved in total, with a preview of every file:
 
 ![Image Studio — batch image compression with previews and savings](docs/screenshots/image-studio.png)
 
@@ -32,6 +36,14 @@ sites, with no uploads, no accounts, and no file-size upsells. Your files never 
 **Video & Audio Studio** — ffmpeg running in the browser, audio extracted from a clip:
 
 ![Video and Audio Studio — extracting audio from a video, in the browser](docs/screenshots/video-studio.png)
+
+**Subtitle Tools** — an SRT file loaded, ready to convert to WebVTT:
+
+![Subtitle Tools — converting SRT to WebVTT](docs/screenshots/subtitles.png)
+
+**Transcribe (Beta)** — Whisper speech-to-text on your own machine, ready to run:
+
+![Transcribe — local Whisper speech-to-text](docs/screenshots/transcribe.png)
 
 ## The tools
 
