@@ -43,20 +43,22 @@ export default function Dropzone({
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
       className={[
-        "rounded-xl border-2 border-dashed p-8 text-center transition-colors",
+        "rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-200",
         dragging
-          ? "border-teal-600 bg-teal-50 dark:bg-teal-950"
-          : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900",
+          ? "border-teal-600 bg-teal-50 ring-4 ring-teal-600/15 dark:border-teal-400 dark:bg-teal-950 dark:ring-teal-400/15"
+          : "border-zinc-300 bg-white hover:border-teal-600/60 hover:bg-teal-50/40 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-teal-400/50 dark:hover:bg-teal-950/40",
       ].join(" ")}
     >
-      <UploadCloud className="mx-auto h-8 w-8 text-teal-700 dark:text-teal-400" aria-hidden />
-      <label htmlFor={inputId} className="mt-3 block cursor-pointer font-medium">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-700/10 text-teal-700 dark:bg-teal-400/10 dark:text-teal-300">
+        <UploadCloud className="h-6 w-6" aria-hidden />
+      </span>
+      <label htmlFor={inputId} className="mt-4 block cursor-pointer text-base font-semibold">
         {label}
       </label>
-      {hint ? <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{hint}</p> : null}
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+      {hint ? <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{hint}</p> : null}
+      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         or{" "}
-        <span className="font-medium text-teal-700 underline dark:text-teal-300">
+        <span className="font-semibold text-teal-700 underline decoration-teal-600/40 underline-offset-2 dark:text-teal-300">
           browse your files
         </span>
       </p>
