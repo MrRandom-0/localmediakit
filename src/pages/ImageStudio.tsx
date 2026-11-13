@@ -2,6 +2,8 @@ import { Download, FileArchive, Play, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Dropzone from "../components/Dropzone";
 import {
+  cardClass,
+  ghostButtonClass,
   inputClass,
   labelClass,
   PageHeader,
@@ -173,7 +175,7 @@ export default function ImageStudio() {
         onFiles={addFiles}
       />
 
-      <div className="mt-6 grid gap-4 rounded-xl border border-zinc-200 bg-white p-5 sm:grid-cols-3 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className={`${cardClass} mt-6 grid gap-4 p-6 sm:grid-cols-3`}>
         <div>
           <label htmlFor="format" className={labelClass}>
             Output format
@@ -260,27 +262,29 @@ export default function ImageStudio() {
               <Trash2 className="h-4 w-4" aria-hidden /> Clear
             </button>
             {totals.count > 0 && (
-              <p className="ml-auto text-sm" role="status">
+              <p className="ml-auto text-sm tabular-nums" role="status">
                 {formatBytes(totals.before)} → {formatBytes(totals.after)} (
                 <strong>{savingsPercent(totals.before, totals.after)}% saved</strong>)
               </p>
             )}
           </div>
 
-          <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+          <ul
+            className={`${cardClass} divide-y divide-zinc-100 overflow-hidden dark:divide-zinc-800`}
+          >
             {jobs.map((job) => (
               <li
                 key={job.id}
-                className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-sm"
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3.5 text-sm transition hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
               >
                 <img
                   src={job.previewUrl}
                   alt={`Preview of ${job.file.name}`}
-                  className="h-12 w-12 shrink-0 rounded-md border border-zinc-200 object-cover dark:border-zinc-700"
+                  className="h-12 w-12 shrink-0 rounded-lg object-cover ring-1 ring-zinc-900/10 dark:ring-white/10"
                   loading="lazy"
                 />
                 <span className="min-w-0 flex-1 truncate font-medium">{job.file.name}</span>
-                <span className="text-zinc-500">
+                <span className="text-zinc-500 tabular-nums">
                   {job.originalWidth && job.originalHeight
                     ? `${job.originalWidth} × ${job.originalHeight} · `
                     : ""}
@@ -291,17 +295,17 @@ export default function ImageStudio() {
                     <img
                       src={job.result.previewUrl}
                       alt={`Processed result for ${job.file.name}`}
-                      className="h-12 w-12 shrink-0 rounded-md border border-teal-200 object-cover dark:border-teal-800"
+                      className="h-12 w-12 shrink-0 rounded-lg object-cover ring-1 ring-teal-600/30 dark:ring-teal-400/30"
                       loading="lazy"
                     />
-                    <span>
+                    <span className="tabular-nums">
                       → {job.result.width} × {job.result.height} ·{" "}
                       {formatBytes(job.result.blob.size)} (
                       {savingsPercent(job.file.size, job.result.blob.size)}% saved)
                     </span>
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 font-medium text-teal-700 hover:underline dark:text-teal-300"
+                      className={ghostButtonClass}
                       onClick={() => job.result && downloadBlob(job.result.blob, job.result.name)}
                     >
                       <Download className="h-4 w-4" aria-hidden /> Download

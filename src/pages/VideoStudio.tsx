@@ -2,6 +2,7 @@ import { AlertTriangle, Download, Play } from "lucide-react";
 import { useMemo, useState } from "react";
 import Dropzone from "../components/Dropzone";
 import {
+  cardClass,
   ErrorBox,
   inputClass,
   labelClass,
@@ -185,7 +186,7 @@ export default function VideoStudio() {
       {!isolated && (
         <div
           role="alert"
-          className="mb-6 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+          className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200"
         >
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
           <div>
@@ -214,12 +215,13 @@ export default function VideoStudio() {
 
       {file && (
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className={`${cardClass} p-5`}>
             <p className="mb-3 text-sm">
-              <strong>{file.name}</strong> · {formatBytes(file.size)}
+              <strong>{file.name}</strong> ·{" "}
+              <span className="tabular-nums">{formatBytes(file.size)}</span>
             </p>
             {file.type.startsWith("video/") && previewUrl ? (
-              <video src={previewUrl} controls className="max-h-96 w-full rounded-lg bg-black" />
+              <video src={previewUrl} controls className="max-h-96 w-full rounded-xl bg-black" />
             ) : file.type.startsWith("audio/") && previewUrl ? (
               <audio src={previewUrl} controls className="w-full" />
             ) : (
@@ -229,7 +231,7 @@ export default function VideoStudio() {
             )}
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className={`${cardClass} p-6`}>
             <label htmlFor="job" className={labelClass}>
               What do you want to do?
             </label>
@@ -416,8 +418,8 @@ export default function VideoStudio() {
             )}
 
             {result && (
-              <div className="mt-4 rounded-md bg-teal-50 px-4 py-3 text-sm dark:bg-teal-950">
-                <p>
+              <div className="mt-4 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3.5 text-sm dark:border-teal-400/25 dark:bg-teal-950">
+                <p className="tabular-nums">
                   <strong>{result.name}</strong> — {formatBytes(result.blob.size)}
                   {file && result.blob.size < file.size && (
                     <>

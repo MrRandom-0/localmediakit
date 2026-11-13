@@ -1,7 +1,13 @@
 import { Download } from "lucide-react";
 import { useMemo, useState } from "react";
 import Dropzone from "../components/Dropzone";
-import { inputClass, labelClass, PageHeader, secondaryButtonClass } from "../components/ui";
+import {
+  cardClass,
+  inputClass,
+  labelClass,
+  PageHeader,
+  secondaryButtonClass,
+} from "../components/ui";
 import { downloadText } from "../lib/download";
 import { replaceExtension } from "../lib/format";
 import {
@@ -98,12 +104,12 @@ export default function SubtitleTools() {
       </div>
 
       {cues.length > 0 && (
-        <p role="status" className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p role="status" className="mt-2 text-sm text-zinc-600 tabular-nums dark:text-zinc-400">
           {cues.length} cue{cues.length === 1 ? "" : "s"} loaded from {fileName}.
         </p>
       )}
 
-      <div className="mt-6 grid gap-4 rounded-xl border border-zinc-200 bg-white p-5 sm:grid-cols-3 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className={`${cardClass} mt-6 grid gap-4 p-6 sm:grid-cols-3`}>
         <div>
           <label htmlFor="output-format" className={labelClass}>
             Output format
@@ -156,7 +162,7 @@ export default function SubtitleTools() {
               <Download className="h-4 w-4" aria-hidden /> Download .{outputFormat}
             </button>
           </div>
-          <pre className="max-h-96 overflow-auto rounded-xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <pre className="max-h-96 overflow-auto rounded-2xl bg-zinc-950 p-5 font-mono text-sm text-zinc-100 shadow-card dark:bg-zinc-900 dark:ring-1 dark:ring-zinc-800">
             {result}
           </pre>
         </div>

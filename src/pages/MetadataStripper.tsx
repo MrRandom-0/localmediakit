@@ -1,7 +1,7 @@
 import { AlertTriangle, Download, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import Dropzone from "../components/Dropzone";
-import { PageHeader } from "../components/ui";
+import { cardClass, PageHeader, primaryButtonClass } from "../components/ui";
 import { downloadBlob } from "../lib/download";
 import { hasGps, summariseExif, type ExifRow, type RawExif } from "../lib/exif";
 import { formatBytes, replaceExtension } from "../lib/format";
@@ -114,8 +114,8 @@ export default function MetadataStripper() {
       )}
 
       {item && (
-        <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="font-semibold">
+        <div className={`${cardClass} mt-6 p-6`}>
+          <h2 className="font-semibold tracking-tight">
             {item.file.name}{" "}
             <span className="font-normal text-zinc-500">({formatBytes(item.file.size)})</span>
           </h2>
@@ -124,7 +124,7 @@ export default function MetadataStripper() {
             <img
               src={previewUrl}
               alt={`Preview of ${item.file.name}`}
-              className="mt-3 max-h-80 w-full rounded-lg border border-zinc-200 object-contain dark:border-zinc-700"
+              className="mt-4 max-h-80 w-full rounded-xl bg-zinc-100 object-contain ring-1 ring-zinc-900/10 dark:bg-zinc-800/60 dark:ring-white/10"
             />
           )}
 
@@ -146,7 +146,7 @@ export default function MetadataStripper() {
               {item.gps && (
                 <p
                   role="alert"
-                  className="mt-3 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+                  className="mt-4 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200"
                 >
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                   This photo contains GPS location data. Anyone you send it to can find where it was
@@ -167,7 +167,7 @@ export default function MetadataStripper() {
                   type="button"
                   onClick={strip}
                   disabled={busy}
-                  className="mt-4 inline-flex items-center gap-2 rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50"
+                  className={`${primaryButtonClass} mt-5`}
                 >
                   <ShieldCheck className="h-4 w-4" aria-hidden /> Strip all metadata
                 </button>
@@ -176,7 +176,7 @@ export default function MetadataStripper() {
           )}
 
           {item.strippedBlob && (
-            <div className="mt-4 rounded-md bg-teal-50 px-4 py-3 text-sm dark:bg-teal-950">
+            <div className="mt-5 rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 text-sm dark:border-teal-400/25 dark:bg-teal-950">
               <p className="font-medium text-teal-900 dark:text-teal-100">
                 Done — the cleaned copy was re-read and{" "}
                 {item.strippedRows && item.strippedRows.length > 0
@@ -189,7 +189,7 @@ export default function MetadataStripper() {
               </p>
               <button
                 type="button"
-                className="mt-3 inline-flex items-center gap-2 rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
+                className={`${primaryButtonClass} mt-3`}
                 onClick={() => {
                   if (!item.strippedBlob) return;
                   const format = formatFromMime(item.file.type) ?? "jpeg";

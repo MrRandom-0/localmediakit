@@ -1,7 +1,13 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 import Dropzone from "../components/Dropzone";
-import { ErrorBox, PageHeader, primaryButtonClass, secondaryButtonClass } from "../components/ui";
+import {
+  BetaBadge,
+  ErrorBox,
+  PageHeader,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "../components/ui";
 import { downloadText } from "../lib/download";
 import { replaceExtension } from "../lib/format";
 import type { TranscriptionResult } from "../lib/transcriber";
@@ -48,9 +54,9 @@ export default function Transcribe() {
         the output as a good first draft.
       </PageHeader>
 
-      <span className="mb-4 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-        Beta — local AI, expect mistakes
-      </span>
+      <div className="-mt-3 mb-5">
+        <BetaBadge />
+      </div>
 
       <Dropzone
         accept="audio/*,video/*"
@@ -103,7 +109,7 @@ export default function Transcribe() {
               <Download className="h-4 w-4" aria-hidden /> Subtitles (.srt)
             </button>
           </div>
-          <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <pre className="max-h-[32rem] overflow-auto rounded-2xl bg-zinc-950 p-5 font-mono text-sm whitespace-pre-wrap text-zinc-100 shadow-card dark:bg-zinc-900 dark:ring-1 dark:ring-zinc-800">
             {result.text}
           </pre>
         </div>

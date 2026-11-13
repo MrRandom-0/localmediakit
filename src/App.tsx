@@ -22,7 +22,7 @@ export default function App() {
             path="*"
             element={
               <div className="max-w-xl">
-                <h1 className="text-3xl font-bold">Page not found</h1>
+                <h1 className="text-4xl font-extrabold tracking-tight">Page not found</h1>
                 <p className="mt-2 text-zinc-600 dark:text-zinc-400">
                   That tool doesn't exist (yet). Head back home and pick one that does.
                 </p>
