@@ -118,8 +118,7 @@ export default function ImageStudio() {
         // the canvas-native formats, everything else falls back to JPEG.
         const format =
           formatChoice === "keep"
-            ? (formatFromMime(job.file.type) ??
-              (job.file.type === "image/avif" ? "avif" : "jpeg"))
+            ? (formatFromMime(job.file.type) ?? (job.file.type === "image/avif" ? "avif" : "jpeg"))
             : formatChoice;
         const processed = await processImage(job.file, {
           format,
@@ -183,9 +182,9 @@ export default function ImageStudio() {
     <div>
       <PageHeader title="Image Studio">
         Compress, convert and resize images in batches. WebP at a sensible quality setting usually
-        cuts photo sizes by half or more, AVIF goes further still, and PNG stays lossless. Resize
-        by longest side, or crop to an exact size for social and link previews. Processed images
-        also come out with their metadata removed, as a side effect of how browsers encode them.
+        cuts photo sizes by half or more, AVIF goes further still, and PNG stays lossless. Resize by
+        longest side, or crop to an exact size for social and link previews. Processed images also
+        come out with their metadata removed, as a side effect of how browsers encode them.
       </PageHeader>
 
       <Dropzone

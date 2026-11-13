@@ -7,12 +7,15 @@ generated — capture real ones from the running app. Current set captured
 1. `home.png` — the home page at desktop width, showing the tool cards.
 2. `home-dark.png` — the home page in dark mode (system theme).
 3. `image-studio.png` — Image Studio with 3–4 photos processed, showing
-   before/after sizes and the savings total.
+   before/after sizes and the savings total. (Current capture uses the
+   exact-size crop mode at 1080×1080, re-captured 2026-11-13.)
 4. `metadata.png` — Metadata Stripper showing a GPS warning on a throwaway
    test photo (take one outside a random public place — never your home).
 5. `video-studio.png` — Video & Audio Studio mid-job or with a finished
    result and its download button.
-6. `subtitles.png` — Subtitle Tools with a small sample file loaded.
+6. `subtitles.png` — Subtitle Tools with sample files loaded, showing the
+   batch panel (re-captured 2026-11-13 at a taller 1440×1400 viewport so
+   the batch list fits in frame).
 7. `transcribe.png` — Transcribe with an audio file queued, ready to run.
 
 Tips: use the same throwaway sample files for all of them, and keep each

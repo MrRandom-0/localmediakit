@@ -188,7 +188,17 @@ export async function processImage(file: File, options: ImageOptions): Promise<P
     }
     if (options.exactSize) {
       const crop = coverCropRect(source, target);
-      context.drawImage(bitmap, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, target.width, target.height);
+      context.drawImage(
+        bitmap,
+        crop.sx,
+        crop.sy,
+        crop.sw,
+        crop.sh,
+        0,
+        0,
+        target.width,
+        target.height,
+      );
     } else {
       context.drawImage(bitmap, 0, 0, target.width, target.height);
     }

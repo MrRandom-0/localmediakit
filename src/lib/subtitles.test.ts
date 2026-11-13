@@ -185,7 +185,8 @@ describe("detectFormat", () => {
 });
 
 describe("convertSubtitles", () => {
-  const srt = "1\n00:00:01,000 --> 00:00:03,000\n<i>Hello</i> world\n\n2\n00:00:04,000 --> 00:00:05,500\nSecond line\n";
+  const srt =
+    "1\n00:00:01,000 --> 00:00:03,000\n<i>Hello</i> world\n\n2\n00:00:04,000 --> 00:00:05,500\nSecond line\n";
 
   it("converts SRT to VTT end to end", () => {
     const result = convertSubtitles(srt, { outputFormat: "vtt", shiftMs: 0, strip: false });
@@ -203,7 +204,9 @@ describe("convertSubtitles", () => {
   });
 
   it("returns null when the input has no cues", () => {
-    expect(convertSubtitles("just some prose", { outputFormat: "vtt", shiftMs: 0, strip: false })).toBeNull();
+    expect(
+      convertSubtitles("just some prose", { outputFormat: "vtt", shiftMs: 0, strip: false }),
+    ).toBeNull();
     expect(convertSubtitles("", { outputFormat: "srt", shiftMs: 0, strip: false })).toBeNull();
   });
 });

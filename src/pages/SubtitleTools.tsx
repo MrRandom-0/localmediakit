@@ -134,9 +134,8 @@ export default function SubtitleTools() {
     <div>
       <PageHeader title="Subtitle Tools">
         Convert between SRT (the format most players and editors use) and WebVTT (the format web
-        players need), fix captions that drift out of sync, and remove formatting tags — one file
-        at a time or a whole season in a batch — all by editing the text locally, never uploading
-        it.
+        players need), fix captions that drift out of sync, and remove formatting tags — one file at
+        a time or a whole season in a batch — all by editing the text locally, never uploading it.
       </PageHeader>
 
       <Dropzone
@@ -237,18 +236,14 @@ export default function SubtitleTools() {
                 <FileArchive className="h-4 w-4" aria-hidden />
                 Download all as zip ({downloadableBatch.length})
               </button>
-              <button
-                type="button"
-                className={secondaryButtonClass}
-                onClick={() => setBatch([])}
-              >
+              <button type="button" className={secondaryButtonClass} onClick={() => setBatch([])}>
                 <Trash2 className="h-4 w-4" aria-hidden /> Clear batch
               </button>
             </div>
           </div>
           <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
-            Every file below is converted with the settings above — change the format, shift or
-            tag stripping and the whole batch updates.
+            Every file below is converted with the settings above — change the format, shift or tag
+            stripping and the whole batch updates.
           </p>
           <ul
             className={`${cardClass} divide-y divide-zinc-100 overflow-hidden dark:divide-zinc-800`}

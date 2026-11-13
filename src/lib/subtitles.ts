@@ -162,7 +162,10 @@ export interface ConvertedSubtitles {
  * one pasted file and batch-converting twenty dropped files run exactly the
  * same code. Returns null when the input contains no cues at all.
  */
-export function convertSubtitles(content: string, options: ConvertOptions): ConvertedSubtitles | null {
+export function convertSubtitles(
+  content: string,
+  options: ConvertOptions,
+): ConvertedSubtitles | null {
   const cues = parseSubtitles(content);
   if (cues.length === 0) return null;
   let working = cues;

@@ -48,17 +48,23 @@ sites, with no uploads, no accounts, and no file-size upsells. Your files never 
 ## The tools
 
 ### 🖼️ Image Studio
-Batch-compress photos with a quality slider, convert between JPEG / PNG / WebP, and resize
-with sensible presets (4K, Full HD, blog, email). See before/after sizes and the savings
-percentage per file, download individually, or grab everything as one zip.
+
+Batch-compress photos with a quality slider, convert between JPEG / PNG / WebP / AVIF (the
+AVIF option explains itself when the browser can't encode it — and a file is never silently
+handed back in the wrong format), and resize two ways: longest-side presets (4K, Full HD,
+blog, email) or exact sizes cropped to fill — 1200×630 link previews, 1080×1080 squares,
+stories, or your own custom dimensions. See before/after sizes and the savings percentage
+per file, download individually, or grab everything as one zip.
 
 ### 🛡️ Metadata Stripper
+
 See what a photo reveals about you — camera model, when it was taken, the software that
 edited it, and GPS coordinates, with a plain-language warning when location is present.
 Strip it all with one click, and verify: the cleaned file is re-read and its (empty)
 metadata shown back to you as proof.
 
 ### 🎬 Video & Audio Studio
+
 Real ffmpeg, compiled to WebAssembly, running in the tab:
 
 - **Convert** video to MP4 or WebM
@@ -68,10 +74,14 @@ Real ffmpeg, compiled to WebAssembly, running in the tab:
 - **Trim** clips with frame-accurate cuts (re-encoded on purpose — stream copies drift)
 
 ### 💬 Subtitle Tools
+
 Convert SRT ↔ WebVTT, shift timings that are out of sync (positive or negative, clamped at
 zero), and strip formatting tags (`<i>`, colours, positioning) down to the spoken words.
+Drop several files to batch-convert them all with the same settings, then download them
+individually or as one zip.
 
 ### 🎙️ Transcribe — Beta
+
 Speech-to-text on your own machine with OpenAI's Whisper (`whisper-tiny.en`) via
 Transformers.js. Produces a plain transcript and a downloadable `.srt`. Honestly labelled
 Beta: the tiny local model is less accurate than cloud services — it is a good first draft,
