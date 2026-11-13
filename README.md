@@ -7,6 +7,8 @@
 subtitle photos, videos and audio — a private alternative to Kapwing and the online converter
 sites, with no uploads, no accounts, and no file-size upsells. Your files never leave your device.
 
+**▶ Try it live: [localmediakit.netlify.app](https://localmediakit.netlify.app)**
+
 > Most converter sites work like this: you upload your file, it sits on their server, you wait
 > in a queue. LocalMediaKit works like this: the processing happens in this browser tab, on
 > your machine. Close the tab and everything is gone.
