@@ -140,3 +140,36 @@ export function detectFormat(content: string, fileName = ""): SubtitleFormat {
   if (/\.vtt$/i.test(fileName)) return "vtt";
   return "srt";
 }
+
+export interface ConvertOptions {
+  outputFormat: SubtitleFormat;
+  /** Timing shift in milliseconds; may be negative. */
+  shiftMs: number;
+  /** Remove formatting tags from cue text. */
+  strip: boolean;
+}
+
+export interface ConvertedSubtitles {
+  /** The converted file content, ready to download. */
+  output: string;
+  /** Number of cues in the source. */
+  cueCount: number;
+}
+
+/**
+ * The whole Subtitle Tools pipeline — parse, optionally strip formatting,
+ * optionally shift timings, serialise — as one pure function, so converting
+ * one pasted file and batch-converting twenty dropped files run exactly the
+ * same code. Returns null when the input contains no cues at all.
+ */
+export function convertSubtitles(content: string, options: ConvertOptions): ConvertedSubtitles | null {
+  const cues = parseSubtitles(content);
+  if (cues.length === 0) return null;
+  let working = cues;
+  if (options.strip) working = stripCueFormatting(working);
+  if (options.shiftMs !== 0) working = shiftCues(working, options.shiftMs);
+  return {
+    output: options.outputFormat === "srt" ? toSrt(working) : toVtt(working),
+    cueCount: cues.length,
+  };
+}

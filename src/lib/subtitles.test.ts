@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  convertSubtitles,
   detectFormat,
   formatTimestamp,
   parseSubtitles,
@@ -180,5 +181,29 @@ describe("detectFormat", () => {
 
   it("defaults to SRT", () => {
     expect(detectFormat("1\n00:00:01,000...")).toBe("srt");
+  });
+});
+
+describe("convertSubtitles", () => {
+  const srt = "1\n00:00:01,000 --> 00:00:03,000\n<i>Hello</i> world\n\n2\n00:00:04,000 --> 00:00:05,500\nSecond line\n";
+
+  it("converts SRT to VTT end to end", () => {
+    const result = convertSubtitles(srt, { outputFormat: "vtt", shiftMs: 0, strip: false });
+    expect(result).not.toBeNull();
+    expect(result?.cueCount).toBe(2);
+    expect(result?.output.startsWith("WEBVTT\n")).toBe(true);
+    expect(result?.output).toContain("00:00:01.000 --> 00:00:03.000");
+  });
+
+  it("applies strip and shift together, in pipeline order", () => {
+    const result = convertSubtitles(srt, { outputFormat: "srt", shiftMs: 1500, strip: true });
+    expect(result?.output).toContain("00:00:02,500 --> 00:00:04,500");
+    expect(result?.output).toContain("Hello world");
+    expect(result?.output).not.toContain("<i>");
+  });
+
+  it("returns null when the input has no cues", () => {
+    expect(convertSubtitles("just some prose", { outputFormat: "vtt", shiftMs: 0, strip: false })).toBeNull();
+    expect(convertSubtitles("", { outputFormat: "srt", shiftMs: 0, strip: false })).toBeNull();
   });
 });
